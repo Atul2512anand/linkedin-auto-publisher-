@@ -34,6 +34,7 @@ named `LinkedInAutoPost` (registered with `Register-ScheduledTask`, NOT schtasks
 | `auth_linkedin.py` | One-time OAuth (local callback server on port 8913). Supports personal (`w_member_social`) AND company-page mode (`LINKEDIN_AUTHOR_TYPE=organization`, extra scopes + orgAcls listing) |
 | `linkedin_client.py` | Token refresh + post creation (`/rest/posts` with `/v2/ugcPosts` fallback); author URN = person or organization per `.env` |
 | `run_once.py` | Orchestrator (`--dry-run`, `--topic`) |
+| `visuals.py` | Optional visuals: Pollinations hero image or Pillow-rendered PDF carousel from the post text. Gated by `VISUAL_MODE` env (off/image/carousel); failures always fall back to text-only posting |
 | `.env` | Secrets + config (git-ignored, never commit) |
 | `tokens.json` | OAuth tokens (git-ignored) |
 

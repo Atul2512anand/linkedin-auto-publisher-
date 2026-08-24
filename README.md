@@ -167,6 +167,30 @@ Verify on your page that the post shows the page identity as author.
 
 ---
 
+## Visuals: hero images & carousels (optional, off by default)
+
+Set `VISUAL_MODE` in `.env`:
+
+| Mode | What happens |
+|---|---|
+| `off` | Text-only post — original behavior, zero risk |
+| `image` | Free AI hero image from [Pollinations.ai](https://pollinations.ai) (no API key needed), styled from your post's hook, attached to the post |
+| `carousel` | Your post is parsed into slides (hook cover → numbered takeaways → CTA card), rendered as branded 1080×1350 cards with Pillow, merged into a **PDF** and uploaded as a native **LinkedIn carousel/document post** — the high-reach format |
+
+Extra settings:
+
+```ini
+VISUAL_MODE=carousel
+BRAND_NAME=Atul Anand        # printed on every slide
+ACCENT_COLOR=#22D3EE         # accent bars, numbers, progress dots
+```
+
+Safety design: visuals are built *before* posting; if image generation or upload
+fails for any reason, the post falls back to text-only automatically and logs a
+warning. Generated assets are saved to `drafts/assets/` for review.
+
+---
+
 ## Make it yours
 
 ### Change the niche / topics
@@ -239,6 +263,7 @@ crontab -e
 | `linkedin_client.py` | OAuth token management (60-day expiry, auto-refresh) + posting via `/rest/posts` with `/v2/ugcPosts` fallback |
 | `auth_linkedin.py` | One-time OAuth login (local callback server on port 8913) |
 | `run_once.py` | Orchestrates everything, saves drafts to `drafts/`, logs to `logs/posted.log` |
+| `visuals.py` | Optional hero images (Pollinations) & branded PDF carousels (Pillow); controlled by `VISUAL_MODE` |
 
 Rate limits: LinkedIn allows ~150 posts/day/member — a 2x-weekly schedule uses 0.03% of it.
 

@@ -5,13 +5,29 @@ from datetime import datetime
 
 import linkedin_client
 from generate import generate_post
-from common import DRAFTS_DIR, LOGS_DIR, POSTED_LOG, ensure_dirs
+from common import DRAFTS_DIR, LOGS_DIR, POSTED_LOG, ensure_dirs, load_env
 
 
 def _force_utf8_console():
     for stream in (sys.stdout, sys.stderr):
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8")
+
+
+def maybe_build_visual(text):
+    load_env()
+    mode = os.environ.get("VISUAL_MODE", "off").strip().lower()
+    if mode not in ("image", "carousel"):
+        return None
+    try:
+        import visuals
+        if mode == "carousel":
+            pdf_path, _ = visuals.build_carousel(text)
+            return pdf_path
+        return visuals.build_hero(text)
+    except Exception as exc:
+        print(f"WARNING: visual generation failed ({exc}). Posting text only.")
+        return None
 
 
 def save_draft(topic, text):
@@ -42,12 +58,16 @@ def main():
     print(f"Topic: {topic}")
     print(f"Draft saved: {draft_path}")
 
+    media_path = maybe_build_visual(text)
+    if media_path:
+        print(f"Visual ready: {media_path}")
+
     if args.dry_run:
         print("--- DRY RUN ---")
         print(text)
         return
 
-    ok, message = linkedin_client.create_post(text)
+    ok, message = linkedin_client.create_post(text, media_path=media_path)
     log_result("POSTED" if ok else "FAILED", topic)
     if ok:
         print(f"SUCCESS: {message}")
