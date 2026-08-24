@@ -179,7 +179,7 @@ def _slide_cta(cta, total, accent):
     return img
 
 
-def build_carousel(text, out_dir=None):
+def build_carousel(text, out_dir=None, tag=None):
     load_env()
     out_dir = out_dir or os.path.join(DRAFTS_DIR, "assets")
     os.makedirs(out_dir, exist_ok=True)
@@ -190,9 +190,8 @@ def build_carousel(text, out_dir=None):
     for i, point in enumerate(parsed["points"], start=1):
         slides.append(_slide_point(point, i, total, accent))
     slides.append(_slide_cta(parsed["cta"], total, accent))
-    total = len(slides)
 
-    stamp = f"carousel_{random.randint(1000, 9999)}"
+    stamp = f"carousel_{tag}" if tag else f"carousel_{random.randint(1000, 9999)}"
     pdf_path = os.path.join(out_dir, f"{stamp}.pdf")
     first, rest = slides[0], slides[1:]
     first.save(pdf_path, save_all=True, append_images=rest, resolution=96)

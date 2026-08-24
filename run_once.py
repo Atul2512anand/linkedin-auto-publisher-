@@ -14,7 +14,7 @@ def _force_utf8_console():
             stream.reconfigure(encoding="utf-8")
 
 
-def maybe_build_visual(text):
+def maybe_build_visual(text, tag=None):
     load_env()
     mode = os.environ.get("VISUAL_MODE", "off").strip().lower()
     if mode not in ("image", "carousel"):
@@ -22,7 +22,7 @@ def maybe_build_visual(text):
     try:
         import visuals
         if mode == "carousel":
-            pdf_path, _ = visuals.build_carousel(text)
+            pdf_path, _ = visuals.build_carousel(text, tag=tag)
             return pdf_path
         return visuals.build_hero(text)
     except Exception as exc:
@@ -58,7 +58,7 @@ def main():
     print(f"Topic: {topic}")
     print(f"Draft saved: {draft_path}")
 
-    media_path = maybe_build_visual(text)
+    media_path = maybe_build_visual(text, tag=os.path.splitext(os.path.basename(draft_path))[0])
     if media_path:
         print(f"Visual ready: {media_path}")
 
