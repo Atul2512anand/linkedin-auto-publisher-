@@ -87,6 +87,86 @@ python run_once.py            # REAL post to your profile 🚀
 
 ---
 
+## Posting to a Company Page (instead of / in addition to personal)
+
+The same pipeline can publish to **any LinkedIn Company Page you admin**. The difference is entirely in LinkedIn's developer permissions:
+
+| | Personal profile | Company Page |
+|---|---|---|
+| Author URN | `urn:li:person:<id>` | `urn:li:organization:<id>` |
+| Scope needed | `w_member_social` | `w_organization_social` (+ `r_organization_social`) |
+| Product needed | Share on LinkedIn (instant) | **Community Management API** (requires app review) |
+| Setup time | ~10 minutes | 10 minutes + review wait (days–weeks) |
+
+### Step-by-step company page setup
+
+**Step 1 — App ownership.** Your developer app must be created by/attached to the
+company whose page you want to post to, and your account must be an **admin
+(Super Admin or Content Admin)** of that page. If someone else owns the page,
+have a super admin create the app, or add you as a page admin first.
+
+**Step 2 — Request the product.**
+1. Open https://developer.linkedin.com/apps → your app
+2. **Products** tab → find **Community Management API** → **Request access**
+3. You'll fill a review form. Tips that get approvals:
+   - Use case: *"Our app schedules and publishes original content to OUR OWN
+     company page. We do not post on behalf of third parties."*
+   - Be specific about what data you touch (post text only) and why API access
+     is required (automation/scheduling)
+   - Company page URL, app description and privacy policy should be consistent
+4. Wait for approval email — typically days to a couple of weeks.
+
+> While waiting, everything else below still applies — personal-profile posting
+> keeps working in the meantime.
+
+**Step 3 — Configure `.env`.**
+
+```ini
+LINKEDIN_AUTHOR_TYPE=organization
+LINKEDIN_ORGANIZATION_ID=<your numeric page ID>
+```
+
+**Step 4 — Find your page's numeric ID.** After approval, re-run:
+
+```bash
+python auth_linkedin.py
+```
+
+The script now requests the extra scopes (`w_organization_social`,
+`r_organization_social`) during consent, and afterwards prints every page you
+admin with its URN:
+
+```
+Fetching company pages you admin...
+  - My Company: urn:li:organization:123456789
+Copy the urn:li:organization:<ID> of your page into .env:
+```
+
+(Re-auth is required because scopes changed — LinkedIn needs fresh consent.)
+
+**Step 5 — Test.**
+
+```bash
+python run_once.py --dry-run    # draft only
+python run_once.py              # publishes AS THE COMPANY PAGE
+```
+
+Verify on your page that the post shows the page identity as author.
+
+### Notes & limitations
+
+- The post payload is identical for pages; only the `author` URN differs.
+- One tokens.json = one destination. To post to personal AND a page from the same
+  machine, keep two copies of this repo (one per `.env`), or run auth twice and
+  swap configs.
+- Page posts appear as the **page**, not as you personally — reactions come from
+  the page identity.
+- If you get `401/403 Access denied` on posting: the Community Management API
+  product isn't approved yet, or the authenticated user isn't a page admin.
+- Rate limits: ~100k posts/day/app, 150/day/member — irrelevant at 2x weekly.
+
+---
+
 ## Make it yours
 
 ### Change the niche / topics

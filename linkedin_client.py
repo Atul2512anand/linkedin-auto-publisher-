@@ -85,10 +85,23 @@ def get_person_id(tokens):
     return person_id
 
 
+def get_author_urn(tokens):
+    author_type = os.environ.get(
+        "LINKEDIN_AUTHOR_TYPE", tokens.get("author_type", "person")
+    ).strip().lower()
+    if author_type == "organization":
+        org_id = os.environ.get("LINKEDIN_ORGANIZATION_ID", "").strip()
+        if not org_id:
+            print("ERROR: LINKEDIN_AUTHOR_TYPE=organization but LINKEDIN_ORGANIZATION_ID "
+                  "is not set in .env")
+            sys.exit(1)
+        return f"urn:li:organization:{org_id}"
+    return f"urn:li:person:{get_person_id(tokens)}"
+
+
 def create_post(text):
     access_token, tokens = get_access_token()
-    person_id = get_person_id(tokens)
-    author_urn = f"urn:li:person:{person_id}"
+    author_urn = get_author_urn(tokens)
     version = datetime.now().strftime("%Y%m")
 
     payload = {

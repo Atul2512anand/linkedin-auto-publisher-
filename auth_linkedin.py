@@ -16,7 +16,13 @@ from common import TOKENS_FILE, load_env
 AUTH_URL = "https://www.linkedin.com/oauth/v2/authorization"
 TOKEN_URL = "https://www.linkedin.com/oauth/v2/accessToken"
 USERINFO_URL = "https://api.linkedin.com/v2/userinfo"
-SCOPES = "openid profile w_member_social"
+ORGS_URL = (
+    "https://api.linkedin.com/v2/organizationAcls"
+    "?q=roleAssignee&role=ADMINISTRATOR&state=APPROVED"
+    "&projection=(elements*(organizationalTarget~(localizedName,vanityName)))"
+)
+SCOPES_PERSON = "openid profile w_member_social"
+SCOPES_ORG_EXTRA = " w_organization_social r_organization_social"
 
 result = {"code": None, "state": None}
 
@@ -51,11 +57,15 @@ def main():
         sys.exit(1)
 
     state = secrets.token_urlsafe(16)
+    author_type = os.environ.get("LINKEDIN_AUTHOR_TYPE", "person").strip().lower()
+    scopes = SCOPES_PERSON + (SCOPES_ORG_EXTRA if author_type == "organization" else "")
+    if author_type == "organization":
+        print("Mode: COMPANY PAGE posting (organization scopes included).")
     query = urlencode({
         "response_type": "code",
         "client_id": client_id,
         "redirect_uri": redirect_uri,
-        "scope": SCOPES,
+        "scope": scopes,
         "state": state,
     })
     auth_url = f"{AUTH_URL}?{query}"
@@ -117,6 +127,7 @@ def main():
         "obtained_at": datetime.now(timezone.utc).isoformat(),
         "person_id": person_id,
         "name": name,
+        "author_type": author_type,
     }
     with open(TOKENS_FILE, "w", encoding="utf-8") as f:
         json.dump(tokens, f, indent=2)
@@ -125,6 +136,35 @@ def main():
     print(f"SUCCESS. Tokens saved to {TOKENS_FILE}")
     if name:
         print(f"Authenticated as: {name} (urn:li:person:{person_id})")
+
+    if author_type == "organization":
+        print("\nFetching company pages you admin...")
+        try:
+            orgs = requests.get(
+                ORGS_URL,
+                headers={
+                    "Authorization": f"Bearer {tokens['access_token']}",
+                    "X-Restli-Protocol-Version": "2.0.0",
+                },
+                timeout=30,
+            )
+            if orgs.ok:
+                elements = orgs.json().get("elements", [])
+                if not elements:
+                    print("No admin pages found for this account.")
+                for el in elements:
+                    target = el.get("organizationalTarget", "")
+                    info = el.get("organizationalTarget~", {})
+                    label = info.get("localizedName") or info.get("vanityName") or "(unnamed)"
+                    print(f"  - {label}: {target}")
+                print("\nCopy the urn:li:organization:<ID> of your page into .env:")
+                print("LINKEDIN_AUTHOR_TYPE=organization")
+                print("LINKEDIN_ORGANIZATION_ID=<the numeric ID>")
+            else:
+                print(f"WARNING: could not list pages ({orgs.status_code}).")
+                print("Set LINKEDIN_ORGANIZATION_ID manually in .env.")
+        except Exception as exc:
+            print(f"WARNING: could not list pages: {exc}")
 
 
 if __name__ == "__main__":

@@ -31,8 +31,8 @@ named `LinkedInAutoPost` (registered with `Register-ScheduledTask`, NOT schtasks
 | `generate.py` | Prompt building, agent invocation, output cleaning, length retry |
 | `persona.txt` | **User-editable** writer identity/niche. Delete → generic default |
 | `topics.txt` | Evergreen backup topics (lines end with `#`) |
-| `auth_linkedin.py` | One-time OAuth (local callback server on port 8913) |
-| `linkedin_client.py` | Token refresh + post creation (`/rest/posts` with `/v2/ugcPosts` fallback) |
+| `auth_linkedin.py` | One-time OAuth (local callback server on port 8913). Supports personal (`w_member_social`) AND company-page mode (`LINKEDIN_AUTHOR_TYPE=organization`, extra scopes + orgAcls listing) |
+| `linkedin_client.py` | Token refresh + post creation (`/rest/posts` with `/v2/ugcPosts` fallback); author URN = person or organization per `.env` |
 | `run_once.py` | Orchestrator (`--dry-run`, `--topic`) |
 | `.env` | Secrets + config (git-ignored, never commit) |
 | `tokens.json` | OAuth tokens (git-ignored) |
