@@ -113,6 +113,8 @@ def clean_output(raw):
     segments = [seg.strip() for seg in re.split(r"\n\s*---+\s*\n", text)]
     if len(segments) > 1:
         text = max(segments, key=len)
+    text = re.sub(r"\*\*([^*]+)\*\*", r"\1", text)
+    text = re.sub(r"(?<!\w)__([^_]+)__(?!\w)", r"\1", text)
     lines = text.splitlines()
     while lines and (not lines[0].strip() or re.match(
             r"^(here('s| is)|certainly|sure|below is|i've|i have)", lines[0].strip(), re.I)):
