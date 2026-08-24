@@ -29,6 +29,12 @@ FEEDS = {
     "Hacker News": "https://hnrss.org/frontpage",
 }
 
+MIRROR_FEEDS = {
+    "BleepingComputer": "https://news.google.com/rss/search?q=site:bleepingcomputer.com+when:3d&hl=en-US&gl=US&ceid=US:en",
+    "SecurityWeek": "https://news.google.com/rss/search?q=site:securityweek.com+when:3d&hl=en-US&gl=US&ceid=US:en",
+    "KrebsOnSecurity": "https://news.google.com/rss/search?q=site:krebsonsecurity.com+when:3d&hl=en-US&gl=US&ceid=US:en",
+}
+
 KEYWORDS = [
     "ai", "artificial intelligence", "machine learning", "llm", "chatbot", "openai", "anthropic",
     "cybersecurity", "cyber", "security", "hack", "hacker", "breach", "ransomware", "malware",
@@ -97,6 +103,12 @@ def score_item(item, now):
     return score
 
 
+def _parse_feed(url):
+    resp = requests.get(url, timeout=20, headers={"User-Agent": "Mozilla/5.0"})
+    resp.raise_for_status()
+    return feedparser.parse(resp.text)
+
+
 def collect(max_per_source=10):
     load_env()
     now = datetime.now(timezone.utc)
@@ -104,18 +116,28 @@ def collect(max_per_source=10):
     items = []
     seen_links = set()
     for name, url in FEEDS.items():
+        via_mirror = False
         try:
-            resp = requests.get(url, timeout=20, headers={"User-Agent": "Mozilla/5.0"})
-            resp.raise_for_status()
-            parsed = feedparser.parse(resp.text)
+            parsed = _parse_feed(url)
         except Exception as exc:
-            print(f"WARNING: {name} feed failed: {exc}")
-            continue
+            mirror = MIRROR_FEEDS.get(name)
+            if not mirror:
+                print(f"WARNING: {name} feed failed: {exc}")
+                continue
+            try:
+                parsed = _parse_feed(mirror)
+                via_mirror = True
+                print(f"NOTE: {name} direct feed blocked - using Google News mirror")
+            except Exception as exc2:
+                print(f"WARNING: {name} feed failed even via mirror: {exc2}")
+                continue
         count = 0
         for entry in parsed.entries:
             if count >= max_per_source:
                 break
             title = clean_text(getattr(entry, "title", ""))
+            if via_mirror and title:
+                title = re.sub(rf"\s+-\s+{re.escape(name)}.*$", "", title, flags=re.I).strip()
             link = getattr(entry, "link", "")
             summary = clean_text(getattr(entry, "summary", "") or getattr(entry, "description", ""))
             if not title or not link or link in seen_links:
