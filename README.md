@@ -227,6 +227,51 @@ The news scraper keyword filter lives in [`scraper.py`](scraper.py) under `KEYWO
 Free starting points: `opencode/x-preview-f-free`, or add an [OpenRouter](https://openrouter.ai)
 key to your opencode config and use any `openrouter/...` free model.
 
+### Recommended free models (ranked)
+
+> Free tiers rotate often. Verify what's live with `opencode models`, and before
+> committing to a model, run `python generate.py` 2-3 times and compare output
+> quality against your current model.
+
+**Via OpenCode Zen (no extra setup if you're logged into Zen):**
+
+| Rank | Model | Notes |
+|---|---|---|
+| 1 | `opencode/x-preview-f-free` | Stealth preview ("Ox Alpha"), excellent instruction-following, 1M context. Free window — may end, watch for expiry |
+| 2 | `opencode/nemotron-3-ultra-free` | NVIDIA 550B MoE — biggest standing free model, strong reasoning |
+| 3 | `opencode/hy3-free` | Tencent HunyuanYuan 3 — good long-form writing |
+| 4 | `opencode/nemotron-3.5-lightning-free` | Newer Nemotron gen, fast |
+| 5 | `opencode/mimo-v2.5-free` | Xiaomi MiMo — decent mid-size fallback |
+
+**Via OpenRouter (needs free key: `opencode auth login` → openrouter):**
+
+| Rank | Model | Notes |
+|---|---|---|
+| 1 | `openrouter/z-ai/glm-5.2:free` | GLM family — community analysis suggests Ox Alpha itself is GLM-based, so this is the closest sibling |
+| 2 | `openrouter/nvidia/nemotron-3-ultra-550b-a55b:free` | Same 550B model via OpenRouter |
+| 3 | `openrouter/thinkingmachines/inkling:free` | Worth testing |
+| 4 | `openrouter/google/gemma-4-31b-it:free` | Small but reliable |
+
+⚠️ OpenRouter `:free` models are rate-limited (~50 requests/day without credits,
+~1000/day once you've ever added $10 credits). Fine for 2 posts/week + testing.
+
+**Other providers (own free API key via `opencode auth login`):**
+
+| Provider | Model example | Why |
+|---|---|---|
+| Google AI Studio | `google/gemini-flash-latest` | 1M context, generous free daily quota, great instruction-following — best standing free option |
+| GitHub Models | via GitHub token | Free for students via GitHub Student Developer Pack |
+| Groq | llama/qwen variants | Very fast, solid free tier |
+| Ollama (local) | `qwen3`, `llama3.1` | Unlimited requests, offline, quality depends on your hardware |
+
+**Strategy:** ride free stealth-preview windows while they last, keep
+`nemotron-3-ultra-free` or Gemini Flash as your permanent fallback, and re-check
+`opencode models` every few weeks — new free previews appear regularly.
+
+**Note on visuals:** carousel design quality is model-independent (rendered by
+code); only the text quality depends on the model. Hero images use Pollinations
+(a diffusion service), also independent of your LLM choice.
+
 ---
 
 ## Automate on a schedule
