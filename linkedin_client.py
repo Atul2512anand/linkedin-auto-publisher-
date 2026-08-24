@@ -153,18 +153,23 @@ def upload_document(path, author_urn, token):
         timeout=300,
     )
     put.raise_for_status()
-    status_url = f"https://api.linkedin.com/rest/documents/{urllib.parse.quote(doc_urn)}"
-    deadline = time.time() + 150
+    status_url = f"https://api.linkedin.com/rest/documents/{urllib.parse.quote(doc_urn, safe='')}"
+    deadline = time.time() + 300
+    last_status = "unknown"
+    time.sleep(3)
     while time.time() < deadline:
         check = requests.get(status_url, headers=_api_headers(token), timeout=30)
         if check.ok:
-            status = check.json().get("status", "")
-            if status in ("DOCUMENT_PROCESSED", "SUCCEEDED"):
+            last_status = check.json().get("status", "unknown")
+            if last_status in ("DOCUMENT_PROCESSED", "SUCCEEDED", "AVAILABLE"):
                 return doc_urn
-            if status == "FAILED":
+            if last_status == "FAILED":
                 raise RuntimeError(f"document processing failed: {check.text[:200]}")
+            print(f"  document status: {last_status}...")
+        else:
+            last_status = f"HTTP {check.status_code}"
         time.sleep(5)
-    raise RuntimeError("document processing timed out")
+    raise RuntimeError(f"document processing timed out (last status: {last_status})")
 
 
 def create_post(text, media_path=None):
@@ -199,7 +204,8 @@ def create_post(text, media_path=None):
         "isReshareDisabledByAuthor": False,
     }
     if media_kind == "document":
-        payload["content"] = {"contentEntities": [{"entity": media_id}]}
+        doc_title = os.path.splitext(os.path.basename(media_path))[0].replace("_", " ")
+        payload["content"] = {"media": {"id": media_id, "title": doc_title}}
     elif media_kind == "image":
         payload["content"] = {"media": [{"id": media_id}]}
 
