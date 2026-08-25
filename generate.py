@@ -115,6 +115,12 @@ def clean_output(raw):
         text = max(segments, key=len)
     text = re.sub(r"\*\*([^*]+)\*\*", r"\1", text)
     text = re.sub(r"(?<!\w)__([^_]+)__(?!\w)", r"\1", text)
+    text = re.sub(
+        r"[\U0001F000-\U0001FAFF\u2600-\u27BF\u2B00-\u2BFF\uFE0F\u2190-\u21FF\u2700-\u27bf\U0001F1E6-\U0001F1FF]",
+        "",
+        text,
+    )
+    text = re.sub(r"([?!.,])\1{2,}", r"\1\1", text)
     lines = text.splitlines()
     while lines and (not lines[0].strip() or re.match(
             r"^(here('s| is)|certainly|sure|below is|i've|i have)", lines[0].strip(), re.I)):
