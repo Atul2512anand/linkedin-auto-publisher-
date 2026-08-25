@@ -16,7 +16,7 @@ Zero paid APIs required. Bring your own AI agent.
 - 🔥 **Event-driven content** - ranks stories by freshness and "newsworthiness" (launches, breaches, lawsuits)
 - 🎭 **Your persona, your niche** - fully configurable via `persona.txt` + `topics.txt`
 - 🔄 **Model-agnostic** - works with OpenCode (any model), Claude Code, or any CLI agent
-- 📰 **Source attribution** - every post ends with the original article link
+- 📰 **Reach-optimized attribution** - source name in the post, source **link auto-commented** below it (external links in the post body suppress LinkedIn reach)
 - 🔐 **Official LinkedIn API** - posts via `w_member_social`, no ToS-violating scrapers
 - ⏰ **Scheduler-ready** - Windows Task Scheduler / cron examples included
 

@@ -172,6 +172,21 @@ def upload_document(path, author_urn, token):
     raise RuntimeError(f"document processing timed out (last status: {last_status})")
 
 
+def create_comment(post_urn, text):
+    access_token, tokens = get_access_token()
+    author_urn = get_author_urn(tokens)
+    url = (
+        "https://api.linkedin.com/rest/socialActions/"
+        + urllib.parse.quote(post_urn, safe="")
+        + "/comments"
+    )
+    body = {"actor": author_urn, "object": post_urn, "message": {"text": text}}
+    resp = requests.post(url, json=body, headers=_api_headers(access_token), timeout=30)
+    if resp.ok:
+        return True, "comment posted"
+    return False, f"comment failed {resp.status_code}: {resp.text[:200]}"
+
+
 def create_post(text, media_path=None, media_title=None):
     access_token, tokens = get_access_token()
     author_urn = get_author_urn(tokens)
@@ -217,9 +232,9 @@ def create_post(text, media_path=None, media_title=None):
     }
     resp = requests.post(POSTS_URL, json=payload, headers=headers, timeout=30)
     if resp.ok:
-        post_id = resp.headers.get("x-restli-id", "")
+        post_urn = resp.headers.get("x-restli-id", "") or None
         label = f"posted with {media_kind}" if media_kind else "posted"
-        return True, f"{label} via /rest/posts id={post_id}"
+        return True, f"{label} via /rest/posts id={post_urn}", post_urn
 
     if media_kind:
         legacy_media = [{
@@ -255,7 +270,7 @@ def create_post(text, media_path=None, media_title=None):
     legacy_headers = {"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"}
     resp2 = requests.post(UGC_POSTS_URL, json=legacy_payload, headers=legacy_headers, timeout=30)
     if resp2.ok:
-        post_id = resp2.json().get("id", "")
+        post_urn = resp2.json().get("id", "") or None
         label = f"posted with {media_kind}" if media_kind else "posted"
-        return True, f"{label} via /v2/ugcPosts id={post_id}"
-    return False, f"posts API {resp.status_code}: {resp.text[:300]} | ugcPosts {resp2.status_code}: {resp2.text[:300]}"
+        return True, f"{label} via /v2/ugcPosts id={post_urn}", post_urn
+    return False, f"posts API {resp.status_code}: {resp.text[:300]} | ugcPosts {resp2.status_code}: {resp2.text[:300]}", None

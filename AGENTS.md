@@ -79,7 +79,8 @@ Model/agent is chosen entirely by `.env`:
   recruiter-magnet depth, light health-tech touches only)
 - STRICTLY no gaming/consumer-gadget/entertainment content
 - 280–450 words, hook → jargon-decoded explanation → lesson/takeaway → CTA question,
-  4–5 hashtags, companies named, source link auto-appended by code
+  4–5 hashtags, companies named. Post body shows "Source: <site>" (name only);
+  the URL is auto-commented as the first comment (links in post body hurt reach)
 - Auto-retry once if output < 260 words
 
 ## Repo notes

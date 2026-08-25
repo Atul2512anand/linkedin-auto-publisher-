@@ -53,7 +53,7 @@ def main():
 
     ensure_dirs()
     print("Generating post via opencode...")
-    topic, text = generate_post(args.topic)
+    topic, text, source_link = generate_post(args.topic)
     draft_path = save_draft(topic, text)
     print(f"Topic: {topic}")
     print(f"Draft saved: {draft_path}")
@@ -69,10 +69,17 @@ def main():
         print(text)
         return
 
-    ok, message = linkedin_client.create_post(text, media_path=media_path, media_title=doc_title if media_path else None)
+    ok, message, post_urn = linkedin_client.create_post(
+        text, media_path=media_path, media_title=doc_title if media_path else None
+    )
     log_result("POSTED" if ok else "FAILED", topic)
     if ok:
         print(f"SUCCESS: {message}")
+        if source_link and post_urn:
+            c_ok, c_msg = linkedin_client.create_comment(
+                post_urn, f"🔗 Source article: {source_link}"
+            )
+            print("Source link in first comment:", c_msg)
     else:
         print(f"FAILED: {message}")
         sys.exit(1)

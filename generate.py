@@ -196,10 +196,12 @@ def generate_post(topic=None):
             + "\n\nCRITICAL: your previous attempt was too short. Rewrite it with at least 300 "
             + "words: deeper technical explanation, concrete lesson, examples."
         )
+    source_link = None
     if news_item:
         scraper.mark_used(news_item["link"])
-        post_text = post_text.rstrip() + f"\n\nSource: {news_item['source']} - {news_item['link']}"
-    return label, post_text
+        source_link = news_item["link"]
+        post_text = post_text.rstrip() + f"\n\nSource: {news_item['source']}"
+    return label, post_text, source_link
 
 
 if __name__ == "__main__":
@@ -207,5 +209,5 @@ if __name__ == "__main__":
         sys.stdout.reconfigure(encoding="utf-8")
         sys.stderr.reconfigure(encoding="utf-8")
     topic_arg = " ".join(sys.argv[1:]) or None
-    chosen, text = generate_post(topic_arg)
+    chosen, text, _link = generate_post(topic_arg)
     print(f"TOPIC: {chosen}\n---\n{text}")
