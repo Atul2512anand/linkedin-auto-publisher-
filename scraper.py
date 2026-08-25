@@ -48,6 +48,7 @@ KEYWORDS = [
 NEGATIVE_KEYWORDS = [
     "deal", "deals", "discount", "sale", "coupon", "price drop", "best price",
     "buying guide", "black friday", "review:", "hands-on:",
+    "gun", "guns", "firearm", "firearms", "weapon", "weapons", "ammunition",
 ]
 
 EVENT_KEYWORDS = [

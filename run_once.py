@@ -61,13 +61,15 @@ def main():
     media_path = maybe_build_visual(text, tag=os.path.splitext(os.path.basename(draft_path))[0])
     if media_path:
         print(f"Visual ready: {media_path}")
+        doc_title = topic.split("] ", 1)[-1][:90] if "]" in topic else topic[:90]
+        print(f"Carousel title: {doc_title}")
 
     if args.dry_run:
         print("--- DRY RUN ---")
         print(text)
         return
 
-    ok, message = linkedin_client.create_post(text, media_path=media_path)
+    ok, message = linkedin_client.create_post(text, media_path=media_path, media_title=doc_title if media_path else None)
     log_result("POSTED" if ok else "FAILED", topic)
     if ok:
         print(f"SUCCESS: {message}")

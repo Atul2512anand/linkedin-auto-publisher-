@@ -172,7 +172,7 @@ def upload_document(path, author_urn, token):
     raise RuntimeError(f"document processing timed out (last status: {last_status})")
 
 
-def create_post(text, media_path=None):
+def create_post(text, media_path=None, media_title=None):
     access_token, tokens = get_access_token()
     author_urn = get_author_urn(tokens)
     version = datetime.now().strftime("%Y%m")
@@ -204,7 +204,7 @@ def create_post(text, media_path=None):
         "isReshareDisabledByAuthor": False,
     }
     if media_kind == "document":
-        doc_title = os.path.splitext(os.path.basename(media_path))[0].replace("_", " ")
+        doc_title = (media_title or os.path.splitext(os.path.basename(media_path))[0])[:90]
         payload["content"] = {"media": {"id": media_id, "title": doc_title}}
     elif media_kind == "image":
         payload["content"] = {"media": [{"id": media_id}]}
